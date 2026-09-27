@@ -53,3 +53,20 @@
 - разработка REST API для расписания и бронирований;
 - контейнеризация приложения;
 - настройка CI/CD.
+
+## Запуск
+
+Проект написан на Python 3.12.
+
+```bash
+python -m venv venv
+source venv/Scripts/activate  # Windows, Git Bash; в PowerShell: venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+python main.py
+```
+
+Проверка оформления кода по PEP 8:
+
+```bash
+flake8
+```
