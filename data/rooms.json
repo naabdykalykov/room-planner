@@ -1,0 +1,34 @@
+[
+    {
+        "id": 1,
+        "name": "Конференц-зал Сириус",
+        "capacity": 40,
+        "has_projector": true,
+        "opens": "08:30",
+        "closes": "21:00"
+    },
+    {
+        "id": 2,
+        "name": "Аудитория А-214",
+        "capacity": 30,
+        "has_projector": true,
+        "opens": "08:00",
+        "closes": "20:00"
+    },
+    {
+        "id": 3,
+        "name": "Переговорная 3",
+        "capacity": 8,
+        "has_projector": false,
+        "opens": "09:00",
+        "closes": "19:00"
+    },
+    {
+        "id": 4,
+        "name": "Актовый зал",
+        "capacity": 150,
+        "has_projector": true,
+        "opens": "10:00",
+        "closes": "22:00"
+    }
+]

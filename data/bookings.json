@@ -1,0 +1,42 @@
+[
+    {
+        "id": 1,
+        "room_id": 1,
+        "title": "Защита курсовых проектов",
+        "date": "2026-10-15",
+        "start": "10:00",
+        "end": "12:30",
+        "participants": 30,
+        "needs_projector": true
+    },
+    {
+        "id": 2,
+        "room_id": 1,
+        "title": "Семинар по Python",
+        "date": "2026-10-15",
+        "start": "12:40",
+        "end": "14:10",
+        "participants": 32,
+        "needs_projector": true
+    },
+    {
+        "id": 3,
+        "room_id": 3,
+        "title": "Встреча проектной команды",
+        "date": "2026-10-15",
+        "start": "11:00",
+        "end": "12:00",
+        "participants": 6,
+        "needs_projector": false
+    },
+    {
+        "id": 4,
+        "room_id": 2,
+        "title": "Консультация по базам данных",
+        "date": "2026-10-16",
+        "start": "15:00",
+        "end": "16:30",
+        "participants": 20,
+        "needs_projector": true
+    }
+]
