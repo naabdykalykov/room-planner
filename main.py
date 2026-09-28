@@ -1,114 +1,206 @@
-from datetime import datetime, time
+from datetime import date
 
-# помещение
-ROOM_NAME = "Конференц-зал Сириус"
-ROOM_CAPACITY = 40
-ROOM_HAS_PROJECTOR = True
-ROOM_OPENS = time(8, 30)
-ROOM_CLOSES = time(21, 0)
+from bookings import (cancel_booking, create_booking, find_free_rooms,
+                      get_period, get_room_schedule, get_statistics)
+from checks import get_occupancy_percent
+from rooms import add_room, find_room_by_id, find_rooms, sort_rooms
+from storage import BOOKINGS_FILE, ROOMS_FILE, load_data, save_data
+from utils import input_date, input_int, input_time, input_yes_no
 
-# мероприятие, которое уже есть в расписании
-BOOKED_TITLE = "Защита курсовых проектов"
-BOOKED_START = datetime(2026, 10, 15, 10, 0)
-BOOKED_END = datetime(2026, 10, 15, 12, 30)
-
-
-def parse_datetime(date_text, time_text):
-    return datetime.strptime(date_text + " " + time_text, "%d.%m.%Y %H:%M")
-
-
-def check_capacity(participants, capacity):
-    return participants <= capacity
-
-
-def get_occupancy_percent(participants, capacity):
-    return round(participants / capacity * 100, 1)
+MENU_ITEMS = (
+    "Показать помещения",
+    "Найти помещение по названию",
+    "Подобрать свободное помещение",
+    "Забронировать помещение",
+    "Отменить бронирование",
+    "Расписание помещения на день",
+    "Показать все бронирования",
+    "Добавить помещение",
+    "Статистика",
+)
 
 
-def check_working_hours(start, end, opens, closes):
-    return opens <= start.time() < end.time() <= closes
+def print_menu() -> None:
+    print("\n=== Сервис планирования использования помещений ===")
+    for number, item in enumerate(MENU_ITEMS, start=1):
+        print(f"{number}. {item}")
+    print("0. Выход")
 
 
-def has_time_conflict(start, end, booked_start, booked_end):
-    # интервалы пересекаются, если каждый начинается раньше конца другого
-    return start < booked_end and booked_start < end
+def get_room_name(rooms: list[dict], room_id: int) -> str:
+    room = find_room_by_id(rooms, room_id)
+    return room["name"] if room else f"помещение {room_id}"
 
 
-def check_equipment(needs_projector, has_projector):
-    return has_projector or not needs_projector
+def show_rooms(rooms: list[dict]) -> None:
+    for room in rooms:
+        projector = "да" if room["has_projector"] else "нет"
+        print(f"{room['id']:>3}. {room['name']}, мест: {room['capacity']}, "
+              f"проектор: {projector}, {room['opens']}-{room['closes']}")
 
 
-def get_decision(in_hours, conflict, fits, equipped):
-    if not in_hours:
-        return "отклонена: время вне часов работы помещения"
-    elif conflict:
-        return "отклонена: в это время помещение занято"
-    elif not fits:
-        return "отклонена: не хватает мест"
-    elif not equipped:
-        return "отклонена: в помещении нет проектора"
+def format_booking(rooms: list[dict], booking: dict) -> str:
+    day = date.fromisoformat(booking["date"]).strftime("%d.%m.%Y")
+    room_name = get_room_name(rooms, booking["room_id"])
+    return (f"{booking['id']:>3}. {day} {booking['start']}-{booking['end']}"
+            f", {room_name}: {booking['title']}"
+            f" ({booking['participants']} чел.)")
+
+
+def show_bookings(rooms: list[dict], bookings: list[dict]) -> None:
+    if not bookings:
+        print("Бронирований нет")
+    for booking in sorted(bookings, key=lambda b: get_period(b)[0]):
+        print(format_booking(rooms, booking))
+
+
+def ask_room(rooms: list[dict]) -> dict | None:
+    show_rooms(rooms)
+    room = find_room_by_id(rooms, input_int("Номер помещения: "))
+    if room is None:
+        print("Такого помещения нет")
+    return room
+
+
+def ask_request() -> dict:
+    day = input_date("Дата (ДД.ММ.ГГГГ): ")
+    start = input_time("Начало (ЧЧ:ММ): ")
+    end = input_time("Конец (ЧЧ:ММ): ")
+    return {
+        "date": day.isoformat(),
+        "start": start.strftime("%H:%M"),
+        "end": end.strftime("%H:%M"),
+        "participants": input_int("Количество участников: ", min_value=1),
+        "needs_projector": input_yes_no("Нужен проектор (да/нет): "),
+    }
+
+
+def search_rooms_menu(rooms: list[dict]) -> None:
+    found = find_rooms(rooms, input("Часть названия: "))
+    if found:
+        show_rooms(found)
     else:
-        return "одобрена"
+        print("Ничего не найдено")
 
 
-def check_request(title, date_text, start_text, end_text,
-                  participants_text, projector_answer):
-    # данные заявки приходят строками, переводим их в нужные типы
-    start = parse_datetime(date_text, start_text)
-    end = parse_datetime(date_text, end_text)
-    participants = int(participants_text)
-    needs_projector = projector_answer.lower() == "да"
-
-    in_hours = check_working_hours(start, end, ROOM_OPENS, ROOM_CLOSES)
-    conflict = has_time_conflict(start, end, BOOKED_START, BOOKED_END)
-    fits = check_capacity(participants, ROOM_CAPACITY)
-    equipped = check_equipment(needs_projector, ROOM_HAS_PROJECTOR)
-    percent = get_occupancy_percent(participants, ROOM_CAPACITY)
-    decision = get_decision(in_hours, conflict, fits, equipped)
-
-    print(f"Заявка: {title}")
-    print(f"  Когда: {date_text}, {start_text}-{end_text}")
-    print(f"  Участников: {participants} (заполненность {percent}%)")
-    print(f"  Нужен проектор: {projector_answer}")
-    print(f"  Решение: {decision}")
-    print()
-
-
-def main():
-    print("Сервис планирования использования помещений")
-    print()
-    print(f"Помещение: {ROOM_NAME}, мест: {ROOM_CAPACITY}")
-    if ROOM_HAS_PROJECTOR:
-        print("Оснащение: есть проектор")
+def free_rooms_menu(rooms: list[dict], bookings: list[dict]) -> None:
+    free = find_free_rooms(rooms, bookings, ask_request())
+    if free:
+        print("Подходят и свободны:")
+        show_rooms(free)
     else:
-        print("Оснащение: проектора нет")
-    opens = ROOM_OPENS.strftime("%H:%M")
-    closes = ROOM_CLOSES.strftime("%H:%M")
-    print(f"Часы работы: {opens}-{closes}")
-    booked_day = BOOKED_START.strftime("%d.%m.%Y")
-    booked_from = BOOKED_START.strftime("%H:%M")
-    booked_to = BOOKED_END.strftime("%H:%M")
-    print(f"Уже в расписании: {BOOKED_TITLE}")
-    print(f"  {booked_day}, {booked_from}-{booked_to}")
-    print()
+        print("Свободных подходящих помещений нет")
 
-    check_request(
-        title="Семинар по Python",
-        date_text="15.10.2026",
-        start_text="12:40",
-        end_text="14:10",
-        participants_text="32",
-        projector_answer="да",
-    )
-    check_request(
-        title="Встреча клуба робототехники",
-        date_text="15.10.2026",
-        start_text="11:30",
-        end_text="13:00",
-        participants_text="25",
-        projector_answer="нет",
-    )
+
+def book_room_menu(rooms: list[dict], bookings: list[dict]) -> None:
+    room = ask_room(rooms)
+    if room is None:
+        return
+    title = input("Название мероприятия: ").strip() or "Без названия"
+    request = {"room_id": room["id"], "title": title}
+    request.update(ask_request())
+    percent = get_occupancy_percent(request["participants"], room["capacity"])
+    print(f"Заполненность помещения: {percent}%")
+    try:
+        booking = create_booking(bookings, room, request)
+    except ValueError as error:
+        print(f"Заявка {error}")
+    else:
+        save_data(BOOKINGS_FILE, bookings)
+        print(f"Заявка одобрена, номер бронирования: {booking['id']}")
+
+
+def cancel_booking_menu(rooms: list[dict], bookings: list[dict]) -> None:
+    show_bookings(rooms, bookings)
+    if not bookings:
+        return
+    booking_id = input_int("Номер бронирования для отмены: ", min_value=1)
+    try:
+        booking = cancel_booking(bookings, booking_id)
+    except ValueError as error:
+        print(f"Не получилось: {error}")
+    else:
+        save_data(BOOKINGS_FILE, bookings)
+        print(f"Бронирование отменено: {booking['title']}")
+
+
+def schedule_menu(rooms: list[dict], bookings: list[dict]) -> None:
+    room = ask_room(rooms)
+    if room is None:
+        return
+    day = input_date("Дата (ДД.ММ.ГГГГ): ")
+    schedule = get_room_schedule(bookings, room["id"], day)
+    if not schedule:
+        print("В этот день помещение свободно")
+    for booking in schedule:
+        print(format_booking(rooms, booking))
+
+
+def add_room_menu(rooms: list[dict]) -> None:
+    name = input("Название помещения: ").strip()
+    if not name:
+        print("Название не может быть пустым")
+        return
+    capacity = input_int("Количество мест: ", min_value=1)
+    has_projector = input_yes_no("Есть проектор (да/нет): ")
+    opens = input_time("Открывается в (ЧЧ:ММ): ")
+    closes = input_time("Закрывается в (ЧЧ:ММ): ")
+    try:
+        room = add_room(rooms, name, capacity, has_projector, opens, closes)
+    except ValueError as error:
+        print(f"Не получилось: {error}")
+    else:
+        save_data(ROOMS_FILE, rooms)
+        print(f"Помещение добавлено под номером {room['id']}")
+
+
+def statistics_menu(rooms: list[dict], bookings: list[dict]) -> None:
+    stats = get_statistics(rooms, bookings)
+    print(f"Всего бронирований: {stats['total']}")
+    print(f"Занято часов: {stats['hours']}")
+    print(f"Дней с мероприятиями: {stats['days']}")
+    print("По помещениям:")
+    for room_id, count in stats["by_room"].items():
+        print(f"  {get_room_name(rooms, room_id)}: {count}")
+    if stats["busiest_id"] is not None:
+        busiest = get_room_name(rooms, stats["busiest_id"])
+        print(f"Самое загруженное помещение: {busiest}")
+
+
+def main() -> None:
+    """Загружает данные из JSON и запускает меню программы."""
+    rooms = load_data(ROOMS_FILE)
+    bookings = load_data(BOOKINGS_FILE)
+    while True:
+        print_menu()
+        choice = input("Выберите действие: ").strip()
+        if choice == "0":
+            print("До свидания!")
+            break
+        elif choice == "1":
+            show_rooms(sort_rooms(rooms))
+        elif choice == "2":
+            search_rooms_menu(rooms)
+        elif choice == "3":
+            free_rooms_menu(rooms, bookings)
+        elif choice == "4":
+            book_room_menu(rooms, bookings)
+        elif choice == "5":
+            cancel_booking_menu(rooms, bookings)
+        elif choice == "6":
+            schedule_menu(rooms, bookings)
+        elif choice == "7":
+            show_bookings(rooms, bookings)
+        elif choice == "8":
+            add_room_menu(rooms)
+        elif choice == "9":
+            statistics_menu(rooms, bookings)
+        else:
+            print("Нет такого пункта меню")
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except (KeyboardInterrupt, EOFError):
+        print("\nПрограмма остановлена")
