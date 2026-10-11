@@ -1,32 +1,41 @@
-# сколько штук не хватает: плюс - недостача, минус - излишек, 0 - сошлось
-def get_difference(expected, actual):
+from datetime import date
+
+OK = "в наличии"
+SHORTAGE = "недостача"
+SURPLUS = "излишек"
+REPLACE = "в наличии, требуется замена"
+
+
+def get_difference(expected: int, actual: int) -> int:
+    """Сколько штук не хватает: плюс - недостача, минус - излишек."""
     return expected - actual
 
 
-# сумма недостачи в рублях, если недостачи нет - 0
-def get_shortage_cost(expected, actual, price):
+def get_shortage_cost(expected: int, actual: int, price: float) -> float:
+    """Сумма недостачи в рублях, если недостачи нет - 0."""
     if actual >= expected:
         return 0.0
     return round(get_difference(expected, actual) * price, 2)
 
 
-# возраст предмета в годах на дату проверки
-def get_age_years(purchase_date, check_date):
+def get_age_years(purchase_date: date, check_date: date) -> float:
+    """Возраст предмета в годах на дату проверки."""
     return round((check_date - purchase_date).days / 365, 1)
 
 
-# нужна ли замена: предмет сломан или старше срока службы
-def needs_replacement(age_years, service_life, is_working):
+def needs_replacement(age_years: float, service_life: int,
+                      is_working: bool) -> bool:
+    """Нужна ли замена: предмет сломан или старше срока службы."""
     return not is_working or age_years > service_life
 
 
-# итог проверки предмета по разнице и признаку замены
-def get_result(difference, replace):
+def get_result(difference: int, replace: bool) -> str:
+    """Итог проверки предмета по разнице и признаку замены."""
     if difference > 0:
-        return "недостача"
+        return SHORTAGE
     elif difference < 0:
-        return "излишек"
+        return SURPLUS
     elif replace:
-        return "в наличии, требуется замена"
+        return REPLACE
     else:
-        return "в наличии"
+        return OK

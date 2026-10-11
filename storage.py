@@ -2,9 +2,12 @@ import json
 
 ROOMS_FILE = "data/rooms.json"
 ITEMS_FILE = "data/items.json"
+CHECKS_FILE = "data/checks.json"
+RESULTS_FILE = "data/results.json"
 
 
-def load_data(path: str):
+def load_data(path: str) -> list[dict]:
+    """Загружает список записей из JSON-файла."""
     try:
         with open(path, encoding="utf-8") as file:
             return json.load(file)
@@ -17,6 +20,6 @@ def load_data(path: str):
 
 
 def save_data(path: str, data: list[dict]) -> None:
-    """Сохраняет список записей в JSON-ФАЙЛ"""
-    with open(path, "w", encoding="UTF-8") as file:
+    """Сохраняет список записей в JSON-файл."""
+    with open(path, "w", encoding="utf-8") as file:
         json.dump(data, file, ensure_ascii=False, indent=4)
