@@ -1,6 +1,7 @@
 from collections.abc import Iterable, Iterator
 from datetime import date
 
+from .common import get_next_id
 from .rooms import Room
 
 
@@ -102,6 +103,14 @@ def get_total(items: Iterable[Item]) -> tuple[int, float]:
     return count, cost
 
 
+def find_item_by_id(items: list[Item], item_id: int) -> Item | None:
+    """Ищет предмет по номеру записи, если нет - None."""
+    for item in items:
+        if item.id == item_id:
+            return item
+    return None
+
+
 def find_item_by_number(items: list[Item], number: str) -> Item | None:
     """Ищет предмет по инвентарному номеру, если нет - None."""
     for item in items:
@@ -132,8 +141,7 @@ def add_item(items: list[Item], number: str, name: str, room: Room,
         raise ValueError(f"инвентарный номер {number} уже занят")
     if not Item.is_valid_quantity(quantity):
         raise ValueError("количество должно быть больше нуля")
-    item_id = max((item.id for item in items), default=0) + 1
-    item = Item(item_id, number, name, room, quantity, price,
+    item = Item(get_next_id(items), number, name, room, quantity, price,
                 purchase_date, service_life)
     items.append(item)
     return item
