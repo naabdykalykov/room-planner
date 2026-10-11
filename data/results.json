@@ -2,37 +2,25 @@
     {
         "id": 1,
         "check_id": 1,
-        "number": "1005",
-        "name": "Проектор",
+        "item_id": 5,
         "expected": 1,
         "actual": 1,
-        "is_working": true,
-        "needs_replacement": true,
-        "status": "в наличии, требуется замена",
-        "shortage_cost": 0.0
+        "is_working": true
     },
     {
         "id": 2,
         "check_id": 1,
-        "number": "1006",
-        "name": "Стол для переговоров",
+        "item_id": 6,
         "expected": 1,
         "actual": 1,
-        "is_working": true,
-        "needs_replacement": false,
-        "status": "в наличии",
-        "shortage_cost": 0.0
+        "is_working": true
     },
     {
         "id": 3,
         "check_id": 1,
-        "number": "1007",
-        "name": "Стул",
+        "item_id": 7,
         "expected": 10,
         "actual": 9,
-        "is_working": true,
-        "needs_replacement": false,
-        "status": "недостача",
-        "shortage_cost": 2300.0
+        "is_working": true
     }
 ]

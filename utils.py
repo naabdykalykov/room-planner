@@ -1,16 +1,6 @@
 from datetime import date, datetime
 
 
-def get_next_id(records: list[dict]) -> int:
-    """Следующий свободный номер записи в списке."""
-    return max((record["id"] for record in records), default=0) + 1
-
-
-def format_date(iso_text: str) -> str:
-    """Переводит дату из вида 2026-10-12 в 12.10.2026."""
-    return date.fromisoformat(iso_text).strftime("%d.%m.%Y")
-
-
 def input_int(prompt: str, min_value: int = 0) -> int:
     """Спрашивает целое число, пока не введут правильно."""
     while True:
