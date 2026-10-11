@@ -3,7 +3,7 @@ from storage import load_data, save_data
 
 def test_save_and_load(tmp_path):
     path = tmp_path / "rooms.json"
-    rooms = [{"id": 1, "name": "Аудитория А-214", "capacity": 30}]
+    rooms = [{"id": 1, "name": "Кабинет 204", "floor": 2}]
     save_data(path, rooms)
     assert load_data(path) == rooms
 

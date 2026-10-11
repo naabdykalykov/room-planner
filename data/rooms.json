@@ -1,34 +1,26 @@
 [
     {
         "id": 1,
-        "name": "Конференц-зал Сириус",
-        "capacity": 40,
-        "has_projector": true,
-        "opens": "08:30",
-        "closes": "21:00"
+        "name": "Кабинет 204",
+        "floor": 2,
+        "responsible": "Иванова А. С."
     },
     {
         "id": 2,
-        "name": "Аудитория А-214",
-        "capacity": 30,
-        "has_projector": true,
-        "opens": "08:00",
-        "closes": "20:00"
+        "name": "Переговорная 305",
+        "floor": 3,
+        "responsible": "Петров Д. И."
     },
     {
         "id": 3,
-        "name": "Переговорная 3",
-        "capacity": 8,
-        "has_projector": false,
-        "opens": "09:00",
-        "closes": "19:00"
+        "name": "Серверная 101",
+        "floor": 1,
+        "responsible": "Смирнов К. А."
     },
     {
         "id": 4,
-        "name": "Актовый зал",
-        "capacity": 150,
-        "has_projector": true,
-        "opens": "10:00",
-        "closes": "22:00"
+        "name": "Бухгалтерия 210",
+        "floor": 2,
+        "responsible": "Кузнецова М. В."
     }
 ]
