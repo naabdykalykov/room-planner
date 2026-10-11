@@ -1,6 +1,7 @@
 import json
 
 ROOMS_FILE = "data/rooms.json"
+ITEMS_FILE = "data/items.json"
 
 
 def load_data(path: str):

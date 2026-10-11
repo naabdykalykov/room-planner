@@ -1,7 +1,8 @@
 from datetime import date, datetime
 from calc import (get_age_years, get_difference, get_result,
                   get_shortage_cost, needs_replacement)
-from storage import ROOMS_FILE, load_data
+from storage import ROOMS_FILE, load_data, ITEMS_FILE
+from items import get_room_items, get_total
 
 # помещение и дата проверки, одни на всю программу
 ROOM_NAME = "Кабинет 204"
@@ -41,9 +42,17 @@ def check_item(number, name, expected_text, actual_text, price_text,
 def main():
     print("Сервис инвентаризации офисных помещений")
     rooms = load_data(ROOMS_FILE)
+    items = load_data(ITEMS_FILE)
     for room in rooms:
         print(f"{room['id']}. {room['name']}, этаж {room['floor']}, "
               f"ответственный: {room['responsible']}")
+        room_items = list(get_room_items(items, room["id"]))
+        for item in room_items:
+            print(f"   {item['number']} {item['name']}: "
+                  f"{item['quantity']} шт. по {item['price']} руб.")
+        count, cost = get_total(room_items)
+        print(f"   Всего: {count} шт. на {cost} руб.")
+
     print(f"Дата проверки: {CHECK_DATE.strftime('%d.%m.%Y')}")
     print()
     check_item("1001", "Кресло офисное", "12", "10", "4500.50",
